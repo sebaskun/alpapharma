@@ -40,11 +40,17 @@ def exact_search(text: str, query: str) -> list[str]:
 
 def extract_candidates(text: str):
     """
-    Extract candidate multi-word phrases from text using noun chunks.
-    Keeps chunks whose head token is NOUN/PROPN.
-    Processes text paragraph by paragraph to avoid cross-paragraph chunks.
+    Extract candidate pharmaceutical terms using noun chunks.
+    Uses blacklist filtering and LLM validation for ambiguous single words.
     """
+    from utils.llm_handler import llm_validate_pharmaceutical_terms
+    from utils.term_blacklist import should_exclude_term, clean_text
+    from utils.drug_lookup_dict import DRUG_DICT
+
     candidates = set()
+    word_to_sentence = {}
+    multi_words = set()
+
     paragraphs = text.split('\n')
 
     for para in paragraphs:
@@ -55,9 +61,48 @@ def extract_candidates(text: str):
         for chunk in doc.noun_chunks:
             head = chunk.root
             if head.pos_ in {"NOUN", "PROPN"}:
-                candidate = chunk.text.strip()
+                candidate = clean_text(chunk.text.strip())
                 if candidate and not candidate.isdigit():
-                    candidates.add(candidate)
+                    if len(candidate.split()) == 1:
+                        # Apply filtering logic before LLM
+                        candidate_upper = candidate.upper()
+
+                        # First priority: Check if it's already in our drug dictionary
+                        # if candidate_upper in DRUG_DICT:
+                        #     candidates.add(candidate)
+                        # Second priority: Check if it should be excluded
+                        if should_exclude_term(candidate):
+                            continue  # Skip blacklisted terms
+                        else:
+                            # Only ambiguous terms go to LLM with clean sentence context
+                            clean_sentence = clean_text(chunk.root.sent.text.strip())
+                            word_to_sentence[candidate] = clean_sentence
+                    else:
+                        # Check multi-word phrases for embedded drug names
+                        words_in_phrase = re.split(r'[\s\-/,]+', candidate)
+                        has_embedded_drug = False
+
+                        for word in words_in_phrase:
+                            word_clean = clean_text(word.strip())
+                            if word_clean and word_clean.upper() in DRUG_DICT:
+                                # Found embedded drug - add to LLM validation with full phrase context
+                                clean_sentence = clean_text(chunk.root.sent.text.strip())
+                                word_to_sentence[word_clean] = clean_sentence
+                                has_embedded_drug = True
+
+                        # If no embedded drugs found, add full phrase as regular multi-word candidate
+                        if not has_embedded_drug:
+                            multi_words.add(candidate)
+
+    # Add all multi-word phrases without embedded drugs (low ambiguity)
+    candidates.update(multi_words)
+
+    # Batch validate single words and embedded drugs with LLM
+    if word_to_sentence:
+        validation_results = llm_validate_pharmaceutical_terms(word_to_sentence)
+        for word, is_pharma in validation_results.items():
+            if is_pharma:
+                candidates.add(word)
 
     return list(candidates)
 
