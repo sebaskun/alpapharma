@@ -60,9 +60,8 @@ def llm_validate_pharmaceutical_terms(word_to_sentence):
             "contexts_text": contexts_text
         })
 
-        print(f"LLM RESPONSE: {result}")
+        # print(f"LLM RESPONSE: {result}")
 
-        # Handle both nested and flat response formats
         if "results" in result:
             return result["results"]
         else:
@@ -70,5 +69,4 @@ def llm_validate_pharmaceutical_terms(word_to_sentence):
 
     except Exception as e:
         print(f"LLM validation error: {e}")
-        # Fallback: reject all single words on error
         return {word: False for word in word_to_sentence.keys()}

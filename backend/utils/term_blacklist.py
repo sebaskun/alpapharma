@@ -1,6 +1,3 @@
-# Term filtering for pharmaceutical CV analysis
-# Organized blacklists to exclude obvious non-pharmaceutical terms
-
 import re
 
 # Compiled regex patterns for performance
@@ -57,15 +54,6 @@ JOB_TITLES = {
 }
 
 def clean_text(text: str) -> str:
-    """
-    Remove formatting artifacts from text.
-
-    Args:
-        text: The text to clean
-
-    Returns:
-        Cleaned text with formatting artifacts removed
-    """
     if not text:
         return ""
 
@@ -76,6 +64,7 @@ def clean_text(text: str) -> str:
     cleaned = ' '.join(cleaned.split())
 
     return cleaned.strip()
+
 
 def should_exclude_term(term: str):
     if not term or not term.strip():
