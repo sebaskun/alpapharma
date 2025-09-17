@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
@@ -14,18 +15,34 @@ class PharmaceuticalValidation(BaseModel):
 def llm_validate_pharmaceutical_terms(word_to_sentence):
     if not word_to_sentence:
         return {}
-    
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        print("Warning: GEMINI_API_KEY not found, skipping LLM validation")
-        return {word: False for word in word_to_sentence.keys()}
 
-    # Setup LangChain components
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash-exp",
-        google_api_key=api_key,
-        temperature=0
-    )
+    # Get LLM provider from environment (default to openai)
+    llm_provider = os.getenv("LLM_PROVIDER", "openai").lower()
+
+    if llm_provider == "openai":
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            print("Warning: OPENAI_API_KEY not found, skipping LLM validation")
+            return {word: False for word in word_to_sentence.keys()}
+
+        # Setup OpenAI LLM
+        llm = ChatOpenAI(
+            model="gpt-4o-mini",
+            api_key=api_key,
+            temperature=0
+        )
+    else:  # gemini
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            print("Warning: GEMINI_API_KEY not found, skipping LLM validation")
+            return {word: False for word in word_to_sentence.keys()}
+
+        # Setup Gemini LLM
+        llm = ChatGoogleGenerativeAI(
+            model="gemini-2.0-flash-exp",
+            google_api_key=api_key,
+            temperature=0
+        )
 
     parser = JsonOutputParser(pydantic_object=PharmaceuticalValidation)
 
@@ -60,7 +77,7 @@ def llm_validate_pharmaceutical_terms(word_to_sentence):
             "contexts_text": contexts_text
         })
 
-        # print(f"LLM RESPONSE: {result}")
+        print(f"LLM RESPONSE: {result}")
 
         if "results" in result:
             return result["results"]

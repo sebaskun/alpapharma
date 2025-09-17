@@ -64,13 +64,7 @@ def extract_candidates(text: str):
                 candidate = clean_text(chunk.text.strip())
                 if candidate and not candidate.isdigit():
                     if len(candidate.split()) == 1:
-                        # Apply filtering logic before LLM
-                        candidate_upper = candidate.upper()
 
-                        # First priority: Check if it's already in our drug dictionary
-                        # if candidate_upper in DRUG_DICT:
-                        #     candidates.add(candidate)
-                        # Second priority: Check if it should be excluded
                         if should_exclude_term(candidate):
                             continue  # Skip blacklisted terms
                         else:
