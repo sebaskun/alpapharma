@@ -5,6 +5,9 @@ import spacy
 from fastapi import UploadFile
 from utils.drug_lookup_dict import DRUG_DICT
 from utils.vectorstore_handler import ChromaManager
+from utils.llm_handler import llm_validate_pharmaceutical_terms
+from utils.term_blacklist import should_exclude_term, clean_text
+from utils.drug_lookup_dict import DRUG_DICT
 
 
 VECTOR_STORE = ChromaManager()
@@ -30,9 +33,6 @@ def extract_candidates(text: str):
     Extract candidate pharmaceutical terms using noun chunks.
     Uses blacklist filtering and LLM validation for ambiguous single words.
     """
-    from utils.llm_handler import llm_validate_pharmaceutical_terms
-    from utils.term_blacklist import should_exclude_term, clean_text
-    from utils.drug_lookup_dict import DRUG_DICT
 
     candidates = set()
     word_to_sentence = {}
