@@ -1,3 +1,7 @@
+import sys
+import fastapi
+import spacy
+from datetime import datetime
 from fastapi import FastAPI, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from utils.drug_lookup_dict import init_drug_dict
@@ -72,10 +76,6 @@ def get_version():
     """
     Get version and system information
     """
-    import sys
-    import fastapi
-    import spacy
-    from datetime import datetime
 
     return {
         "version": "1.0.0",
