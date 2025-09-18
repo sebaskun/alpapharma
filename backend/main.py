@@ -59,6 +59,40 @@ def query_vectorstore(term: str):
     results = VECTOR_STORE.query(term, n_results=5)
     return results
 
+# Health and version endpoints
+@app.get("/health")
+def health_check():
+    """
+    Simple health check endpoint
+    """
+    return {"status": "healthy", "service": "AlpaPharma CV Analyzer"}
+
+@app.get("/version")
+def get_version():
+    """
+    Get version and system information
+    """
+    import sys
+    import fastapi
+    import spacy
+    from datetime import datetime
+
+    return {
+        "version": "1.0.0",
+        "service": "AlpaPharma CV Analyzer",
+        "python_version": sys.version,
+        "fastapi_version": fastapi.__version__,
+        "spacy_version": spacy.__version__,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "features": {
+            "pdf_processing": True,
+            "nlp_analysis": True,
+            "llm_validation": True,
+            "vector_search": True,
+            "fda_database": True
+        }
+    }
+
 
 
 if __name__ == "__main__":
