@@ -1,6 +1,10 @@
-# AlpaPharma - Pharmaceutical CV Entity Extractor
+<div align="center">
+  <img src="frontend/src/assets/alpapharma_transparent.png" alt="AlpaPharma Logo" width="200"/>
 
-AI-powered ATS system that extracts pharmaceutical entities (drugs, ingredients, compounds) from specialist CVs using multi-stage validation with LLMs and vector similarity search.
+  # AlpaPharma - Pharmaceutical CV Entity Extractor
+
+  AI-powered ATS system that extracts pharmaceutical entities (drugs, ingredients, compounds) from specialist CVs using multi-stage validation with LLMs and vector similarity search.
+</div>
 
 ## 🏗️ Architecture
 
