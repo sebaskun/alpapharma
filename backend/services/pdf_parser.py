@@ -39,7 +39,7 @@ def extract_candidates(text: str):
     multi_words = set()
 
     paragraphs = text.split('\n')
-
+    print("start tokenizing CV terms...")
     for para in paragraphs:
         if not para.strip():
             continue
@@ -57,6 +57,11 @@ def extract_candidates(text: str):
                         else:
                             # Only ambiguous terms go to LLM with clean sentence context
                             clean_sentence = clean_text(chunk.root.sent.text.strip())
+
+                            # Skip one-word context duplicates (e.g., "CERTIFICATIONS": "CERTIFICATIONS")
+                            if candidate.lower() in clean_sentence.lower() and len(clean_sentence.split()) == 1:
+                                continue
+
                             word_to_sentence[candidate] = clean_sentence
                     else:
                         # Check multi-word phrases for embedded drug names
@@ -68,7 +73,11 @@ def extract_candidates(text: str):
                             if word_clean and word_clean.upper() in DRUG_DICT:
                                 # Found embedded drug - add to LLM validation with full phrase context
                                 clean_sentence = clean_text(chunk.root.sent.text.strip())
-                                word_to_sentence[word_clean] = clean_sentence
+
+                                # Skip one-word context duplicates for embedded drugs too
+                                if not (word_clean.lower() in clean_sentence.lower() and len(clean_sentence.split()) == 1):
+                                    word_to_sentence[word_clean] = clean_sentence
+
                                 has_embedded_drug = True
 
                         # If no embedded drugs found, add full phrase as regular multi-word candidate
@@ -77,6 +86,8 @@ def extract_candidates(text: str):
 
     # Add all multi-word phrases without embedded drugs (low ambiguity)
     candidates.update(multi_words)
+    print("Preparing LLM call...")
+    print(f"Candidates for LLM validation: {len(word_to_sentence)} terms")
 
     # Batch validate single words and embedded drugs with LLM
     if word_to_sentence:
@@ -84,6 +95,8 @@ def extract_candidates(text: str):
         for word, is_pharma in validation_results.items():
             if is_pharma:
                 candidates.add(word)
+
+    print("LLM called finished")
 
     return list(candidates)
 
@@ -94,6 +107,8 @@ def scan_text_for_entities(text: str):
     # Simple word-based scanning (can later improve with fuzzy/vectorstore)
     tokens = extract_candidates(text)
     seen = set()
+
+    print("Starting Vectorstore querying...")
 
     for token in tokens:
         print(f"Processing token: {token}")
