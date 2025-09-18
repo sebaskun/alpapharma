@@ -45,6 +45,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed system design and API docume
 
    # Extract the JSON file
    cd ../data
+   Folder should be at same level as /backend and /frontend
    unzip drug-ndc-0001-of-0001.json.zip
    cd ../backend
    ```
@@ -58,6 +59,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed system design and API docume
 
    # Extract to project root (one level up from backend)
    # The extracted folder should be: ../chroma_store/
+   Folder should be at same level as /backend and /frontend
    ```
 
    **Option B: Build Your Own Vector Store**
