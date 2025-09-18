@@ -2,6 +2,7 @@ import os
 import chromadb
 from sentence_transformers import SentenceTransformer
 
+
 class ChromaManager:
     def __init__(self, persist_dir: str = "../chroma_store"):
         # check if persist_dir exists, if not error
@@ -11,13 +12,10 @@ class ChromaManager:
 
         # Use SapBERT for biomedical embeddings (same as used for indexing)
         self.embedding_model = SentenceTransformer("cambridgeltl/SapBERT-from-PubMedBERT-fulltext")
-
         self.client = chromadb.PersistentClient(path=persist_dir)
         self.collection = self.client.get_or_create_collection(name="fda_drugs")
-        print(f"Chroma collections available: {self.client.list_collections()}")
 
     def query(self, query: str, n_results: int = 5):
-        # Manually encode query using same SapBERT model used for indexing
         query_embedding = self.embedding_model.encode([query]).tolist()[0]
         return self.collection.query(
             query_embeddings=[query_embedding],

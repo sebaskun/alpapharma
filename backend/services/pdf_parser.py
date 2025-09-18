@@ -1,7 +1,6 @@
 import fitz
 import re
 import spacy
-from spacy.tokens import Span
 
 from fastapi import UploadFile
 from utils.drug_lookup_dict import DRUG_DICT
@@ -24,18 +23,6 @@ def load_pdf_text_from_upload(uploaded_file: UploadFile) -> str:
             if page_text:
                 text.append(page_text)
     return "\n".join(text)
-
-
-def exact_search(text: str, query: str) -> list[str]:
-    """
-    Performs a simple exact search for the query inside the text.
-    Returns list of matched lines.
-    """
-    results = []
-    for line in text.split("\n"):
-        if query in line:
-            results.append(line.strip())
-    return results
 
 
 def extract_candidates(text: str):

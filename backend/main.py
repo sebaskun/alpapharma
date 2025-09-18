@@ -1,4 +1,3 @@
-import re
 from fastapi import FastAPI, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from utils.drug_lookup_dict import init_drug_dict
@@ -17,16 +16,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# initialize utils
+# initialize drug lookup dict
 init_drug_dict()
 
 # Initialize vectorstore
 VECTOR_STORE = ChromaManager()
 
-
+# routes
 @app.post("/extract")
 def extract_entities_from_pdf(file: UploadFile):
-    # check if file is pdf
+    """
+    Extract all pharma entities from a PDF file
+    """
     if file.content_type != "application/pdf":
         return {"error": "Invalid file type. Please upload a PDF file."}
     
@@ -35,13 +36,8 @@ def extract_entities_from_pdf(file: UploadFile):
 
     return {"search": search}
 
-# Query vectorstore endpoint
-@app.get("/query")
-def query_vectorstore(term: str):
-    results = VECTOR_STORE.query(term, n_results=5)
-    return results
 
-# Entity details endpoint
+
 @app.get("/entity/{id_or_uri}")
 def get_entity_details(id_or_uri: str):
     """
@@ -52,6 +48,16 @@ def get_entity_details(id_or_uri: str):
         return HTTPException(status_code=404, detail=f"entity with id {id_or_uri} not found")
     
     return entity
+
+
+# Helpful query vectorstore endpoint
+@app.get("/query")
+def query_vectorstore(term: str):
+    """
+    Helpful endpoint to query vectorstore directly
+    """
+    results = VECTOR_STORE.query(term, n_results=5)
+    return results
 
 
 

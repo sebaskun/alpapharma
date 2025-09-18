@@ -73,16 +73,13 @@ def llm_validate_pharmaceutical_terms(word_to_sentence):
 
     chain = prompt | llm | parser
     try:
-        result = chain.invoke({
-            "contexts_text": contexts_text
-        })
+        result = chain.invoke({"contexts_text": contexts_text})
 
         print(f"LLM RESPONSE: {result}")
 
         if "results" in result:
             return result["results"]
-        else:
-            return result
+        return result
 
     except Exception as e:
         print(f"LLM validation error: {e}")
