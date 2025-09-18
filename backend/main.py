@@ -1,11 +1,21 @@
 import re
 from fastapi import FastAPI, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from utils.drug_lookup_dict import init_drug_dict
 from utils.vectorstore_handler import ChromaManager
 from services.pdf_parser import load_pdf_text_from_upload, scan_text_for_entities
 from services.entity_service import get_entity_from_id
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # initialize utils
 init_drug_dict()
@@ -39,7 +49,7 @@ def get_entity_details(id_or_uri: str):
     """
     entity = get_entity_from_id(id_or_uri)
     if not entity:
-        return HTTPException(status_code=404, detail=f"entity with id {id} not found")
+        return HTTPException(status_code=404, detail=f"entity with id {id_or_uri} not found")
     
     return entity
 

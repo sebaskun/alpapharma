@@ -9,6 +9,9 @@
           </div>
           <h1 class="text-4xl font-bold text-gray-900">AlpaPharma</h1>
         </div>
+        <div class="flex justify-center mb-6">
+          <img src="./assets/alpapharma_transparent.png" alt="AlpaPharma Logo" class="h-40 w-auto">
+        </div>
         <p class="text-xl text-gray-600 max-w-2xl mx-auto">
           Upload a pharmaceutical specialist's CV and discover all medical entities - drugs, ingredients, and compounds - with AI-powered analysis.
         </p>
@@ -87,7 +90,7 @@
           <p class="text-gray-600">Found {{ totalEntities }} medical entities in the CV</p>
         </div>
 
-        <div class="grid gap-6 md:grid-cols-3">
+        <div class="grid gap-6 md:grid-cols-2">
           <div v-for="category in categories" :key="category.name" class="bg-white rounded-2xl shadow-lg border border-orange-100">
             <div class="p-6 border-b border-orange-100">
               <h3 class="text-xl font-bold text-gray-900 mb-2">{{ category.name }}</h3>
@@ -132,9 +135,110 @@
             </div>
           </div>
           <div class="p-6 space-y-4">
-            <div v-for="(value, key) in selectedEntity.details" :key="key">
-              <h4 class="font-semibold text-gray-900 capitalize">{{ key.replace(/([A-Z])/g, ' $1') }}</h4>
-              <p class="text-gray-600">{{ value }}</p>
+            <div v-if="selectedEntity.details.message === 'adjustment needed'">
+              <p class="text-red-600 font-semibold mb-4">adjustment needed</p>
+              <pre class="bg-gray-100 p-4 rounded-lg text-sm overflow-auto whitespace-pre-wrap">{{ JSON.stringify(selectedEntity.details.rawData, null, 2) }}</pre>
+            </div>
+            <div v-else-if="selectedEntity.type === 'Ingredient'">
+              <!-- Ingredient Details -->
+              <div class="space-y-4">
+                <div>
+                  <h4 class="font-semibold text-gray-900 mb-2">Ingredient Name</h4>
+                  <p class="text-gray-700">{{ selectedEntity.name }}</p>
+                </div>
+
+                <div v-if="selectedEntity.details && typeof selectedEntity.details === 'object'">
+                  <h4 class="font-semibold text-gray-900 mb-3">Found in</h4>
+                  <div class="bg-orange-50 p-4 rounded-lg space-y-3">
+                    <div v-if="selectedEntity.details.brand_name">
+                      <span class="font-medium text-gray-600">Brand Name:</span>
+                      <span class="ml-2">{{ selectedEntity.details.brand_name }}</span>
+                    </div>
+                    <div v-if="selectedEntity.details.product_ndc">
+                      <span class="font-medium text-gray-600">Product NDC:</span>
+                      <span class="ml-2">{{ selectedEntity.details.product_ndc }}</span>
+                    </div>
+                    <div v-if="selectedEntity.details.labeler_name">
+                      <span class="font-medium text-gray-600">Labeler:</span>
+                      <span class="ml-2">{{ selectedEntity.details.labeler_name }}</span>
+                    </div>
+                    <div v-if="selectedEntity.details.openfda?.manufacturer_name?.length">
+                      <span class="font-medium text-gray-600">Manufacturer:</span>
+                      <span class="ml-2">{{ selectedEntity.details.openfda.manufacturer_name.join(', ') }}</span>
+                    </div>
+                    <div v-if="selectedEntity.details.product_type">
+                      <span class="font-medium text-gray-600">Product Type:</span>
+                      <span class="ml-2">{{ selectedEntity.details.product_type }}</span>
+                    </div>
+                    <div v-if="selectedEntity.details.route?.length">
+                      <span class="font-medium text-gray-600">Route:</span>
+                      <span class="ml-2">{{ selectedEntity.details.route.join(', ') }}</span>
+                    </div>
+                    <div v-if="selectedEntity.details.dosage_form">
+                      <span class="font-medium text-gray-600">Dosage Form:</span>
+                      <span class="ml-2">{{ selectedEntity.details.dosage_form }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else>
+              <!-- Drug Details -->
+              <div class="space-y-4">
+                <div>
+                  <h4 class="font-semibold text-gray-900 mb-2">Name</h4>
+                  <p class="text-gray-700">{{ selectedEntity.name }}</p>
+                </div>
+
+                <div v-if="selectedEntity.details && typeof selectedEntity.details === 'object'">
+                  <div class="grid gap-4">
+                    <div v-if="selectedEntity.details.product_ndc" class="border-b border-gray-100 pb-2">
+                      <span class="font-medium text-gray-600">Product NDC:</span>
+                      <span class="ml-2">{{ selectedEntity.details.product_ndc }}</span>
+                    </div>
+
+                    <div v-if="selectedEntity.details.labeler_name" class="border-b border-gray-100 pb-2">
+                      <span class="font-medium text-gray-600">Labeler Name:</span>
+                      <span class="ml-2">{{ selectedEntity.details.labeler_name }}</span>
+                    </div>
+
+                    <div v-if="selectedEntity.details.brand_name" class="border-b border-gray-100 pb-2">
+                      <span class="font-medium text-gray-600">Brand Name:</span>
+                      <span class="ml-2">{{ selectedEntity.details.brand_name }}</span>
+                    </div>
+
+                    <div v-if="selectedEntity.details.active_ingredients?.length" class="border-b border-gray-100 pb-2">
+                      <span class="font-medium text-gray-600">Active Ingredients:</span>
+                      <div class="ml-2 mt-1">
+                        <div v-for="ingredient in selectedEntity.details.active_ingredients" :key="ingredient.name" class="text-sm">
+                          <span class="font-medium">{{ ingredient.name }}</span>
+                          <span v-if="ingredient.strength" class="text-gray-500 ml-1">({{ ingredient.strength }})</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div v-if="selectedEntity.details.openfda?.manufacturer_name?.length" class="border-b border-gray-100 pb-2">
+                      <span class="font-medium text-gray-600">Manufacturer:</span>
+                      <span class="ml-2">{{ selectedEntity.details.openfda.manufacturer_name.join(', ') }}</span>
+                    </div>
+
+                    <div v-if="selectedEntity.details.product_type" class="border-b border-gray-100 pb-2">
+                      <span class="font-medium text-gray-600">Product Type:</span>
+                      <span class="ml-2">{{ selectedEntity.details.product_type }}</span>
+                    </div>
+
+                    <div v-if="selectedEntity.details.route?.length" class="border-b border-gray-100 pb-2">
+                      <span class="font-medium text-gray-600">Route:</span>
+                      <span class="ml-2">{{ selectedEntity.details.route.join(', ') }}</span>
+                    </div>
+
+                    <div v-if="selectedEntity.details.dosage_form" class="border-b border-gray-100 pb-2">
+                      <span class="font-medium text-gray-600">Dosage Form:</span>
+                      <span class="ml-2">{{ selectedEntity.details.dosage_form }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -183,48 +287,97 @@ const handleFileSelect = (event) => {
   }
 }
 
-const startAnalysis = () => {
+const startAnalysis = async () => {
   if (!selectedFile.value) return
-  
+
   isAnalyzing.value = true
   showReasoning.value = false
-  
+
   // Start phrase rotation
   phraseInterval = setInterval(() => {
     currentPhraseIndex.value = (currentPhraseIndex.value + 1) % phrases.length
   }, 5000)
-  
-  // Simulate analysis
-  setTimeout(() => {
+
+  try {
+    // Prepare the request
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+
+    console.log('Request - Uploading file:', {
+      name: selectedFile.value.name,
+      size: selectedFile.value.size,
+      type: selectedFile.value.type
+    })
+
+    // Call the backend API
+    const response = await fetch('http://localhost:8000/extract', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    console.log('Response - Extracted entities:', data)
+
+    // Transform the response to match the new structure
+    const entities = data.search || []
+    const drugs = []
+    const ingredients = []
+
+    entities.forEach(entity => {
+      // Handle malformed objects where info is not a dictionary
+      if (!entity.info || typeof entity.info !== 'object' || Array.isArray(entity.info)) {
+        // Add to drugs with adjustment needed message
+        drugs.push({
+          name: entity.name || 'Unknown',
+          type: 'Drug',
+          details: { message: 'adjustment needed', rawData: entity }
+        })
+        return
+      }
+
+      // Properly structured entity
+      if (entity.info.is_ingredient) {
+        ingredients.push({
+          name: entity.name,
+          type: 'Ingredient',
+          details: entity.info.record || entity.info
+        })
+      } else {
+        drugs.push({
+          name: entity.name,
+          type: 'Drug',
+          details: entity.info.record || entity.info
+        })
+      }
+    })
+
+    results.value = {
+      drugs: drugs,
+      ingredients: ingredients
+    }
+
+  } catch (error) {
+    console.error('Error calling /extract endpoint:', error)
+    alert('An error occurred while analyzing the CV. Please try again.')
+  } finally {
     isAnalyzing.value = false
     clearInterval(phraseInterval)
-    
-    results.value = {
-      brandDrugs: [
-        { name: "Lipitor", type: "Brand Drug", details: { therapeuticClass: "Statin", activeIngredient: "Atorvastatin", indication: "Cholesterol management" }},
-        { name: "Advil", type: "Brand Drug", details: { therapeuticClass: "NSAID", activeIngredient: "Ibuprofen", indication: "Pain relief" }}
-      ],
-      genericDrugs: [
-        { name: "Atorvastatin", type: "Generic Drug", details: { therapeuticClass: "Statin", brandNames: "Lipitor, Torvast", indication: "Hypercholesterolemia" }},
-        { name: "Metformin", type: "Generic Drug", details: { therapeuticClass: "Biguanide", brandNames: "Glucophage", indication: "Type 2 diabetes" }}
-      ],
-      ingredients: [
-        { name: "Lactose", type: "Excipient", details: { function: "Filler/Binder", commonUse: "Tablet manufacturing", allergenInfo: "May cause issues in lactose intolerant patients" }},
-        { name: "Magnesium Stearate", type: "Excipient", details: { function: "Lubricant", commonUse: "Prevents sticking during manufacturing", safetyProfile: "Generally recognized as safe" }}
-      ]
-    }
-  }, 8000)
+  }
 }
 
 const categories = computed(() => [
-  { name: "Brand Drugs", count: results.value?.brandDrugs.length || 0, items: results.value?.brandDrugs || [] },
-  { name: "Generic Drugs", count: results.value?.genericDrugs.length || 0, items: results.value?.genericDrugs || [] },
+  { name: "Drugs", count: results.value?.drugs.length || 0, items: results.value?.drugs || [] },
   { name: "Ingredients", count: results.value?.ingredients.length || 0, items: results.value?.ingredients || [] }
 ])
 
 const totalEntities = computed(() => {
   if (!results.value) return 0
-  return results.value.brandDrugs.length + results.value.genericDrugs.length + results.value.ingredients.length
+  return results.value.drugs.length + results.value.ingredients.length
 })
 
 const resetApp = () => {

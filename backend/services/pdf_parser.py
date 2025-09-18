@@ -161,7 +161,7 @@ def scan_text_for_entities(text: str):
                 found_entities.append({
                     "name": token,
                     "source": "vectorstore",
-                    "info": query_results["documents"][0]
+                    "info": DRUG_DICT[query_results["documents"][0][0].upper()]
                 })
                 print(f" - Found match {token} in vector store with distance {query_results['distances'][0][0]}")
                 # break
