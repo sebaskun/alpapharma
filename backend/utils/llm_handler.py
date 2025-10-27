@@ -53,16 +53,21 @@ def llm_validate_pharmaceutical_terms(word_to_sentence):
     contexts_text = "\n".join(word_contexts)
 
     prompt = PromptTemplate(
-        template="""You are a pharmaceutical expert analyzing CV/resume content to identify pharmaceutical, chemical, and drug-related terms.
+        template="""Analyze each word to determine if it's a SPECIFIC pharmaceutical entity name (drug/compound/ingredient) in its sentence.
 
-        Your task: For each word below, determine if it refers to pharmaceutical, chemical, or drug-related terms in its specific sentence context.
-
-        Word-Sentence pairs:
         {contexts_text}
 
-        Classification criteria:
-        - Use TRUE for: drug names, chemical compounds, active ingredients, formulations, pharmaceutical processes, biological targets, therapeutic areas
-        - Use FALSE for: job titles, action verbs, company names, general business terms, non-pharmaceutical meanings
+        Return TRUE only if the word IS the pharmaceutical entity itself:
+        - Has qualifiers: "drug X", "compound X", "agent X", "with X", "using X"
+        - Is a known drug/compound name used as a product
+
+        Return FALSE if it's a general medical concept:
+        - Follows prepositions: "treatment of", "therapy for", "injury to", "lead in"
+        - Is anatomy/condition/action: "prostate", "inflammation", "induced"
+
+        Examples:
+        - "drug Treatment" → TRUE | "treatment of" → FALSE
+        - "with Cisplatin" → TRUE | "lead investigator" → FALSE
 
         {format_instructions}
 
